@@ -127,10 +127,12 @@
 pub mod backoff;
 mod braids;
 pub mod jitter;
+mod refresher;
 pub mod sources;
 mod tokens;
 mod watcher;
 
 pub use braids::*;
+pub use refresher::{TokenRefreshFailed, TokenRefresher};
 pub use tokens::{TokenLifetimeConfig, TokenStatus, TokenWithLifetime};
 pub use watcher::{BorrowedToken, TokenPublisherQuit, TokenWatcher};

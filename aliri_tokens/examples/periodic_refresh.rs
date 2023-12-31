@@ -3,8 +3,8 @@ use std::time::Duration;
 use aliri::jwt;
 use aliri_clock::DurationSecs;
 use aliri_tokens::{
-    backoff, jitter, sources, ClientId, ClientSecret, TokenLifetimeConfig, TokenStatus,
-    TokenWatcher,
+    backoff, jitter, sources, ClientId, ClientSecret, TokenLifetimeConfig, TokenRefresher,
+    TokenStatus,
 };
 use clap::Parser;
 use tokio::time;
@@ -74,12 +74,14 @@ async fn main() -> color_eyre::Result<()> {
 
     let jitter_source = jitter::RandomEarlyJitter::new(DurationSecs(60));
 
-    let watcher = TokenWatcher::spawn_from_token_source(
+    let refresher = TokenRefresher::spawn_from_token_source(
         token_source,
         jitter_source,
         backoff::ErrorBackoffConfig::default(),
     )
     .await?;
+
+    let watcher = refresher.get_watcher();
 
     tracing::info!(
         token = format_args!("{:#?}", watcher.token().access_token()),
