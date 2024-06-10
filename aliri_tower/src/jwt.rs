@@ -71,7 +71,8 @@ impl<Claims, OnError, ReqBody> ValidateRequest<ReqBody> for VerifyJwt<Claims, On
 where
     OnError: OnJwtError,
     OnError::Body: Body + Default,
-    Claims: for<'de> serde::Deserialize<'de> + HasScope + CoreClaims + Send + Sync + 'static,
+    Claims:
+        for<'de> serde::Deserialize<'de> + HasScope + CoreClaims + Clone + Send + Sync + 'static,
 {
     type ResponseBody = OnError::Body;
 
@@ -158,6 +159,8 @@ delegate_impls!(
     std::sync::Arc<T>
 );
 
+const JWT_VALID_FAIL_MSG: &str = "JWT validation failed";
+
 impl<ResBody> OnJwtError for TerseErrorHandler<ResBody>
 where
     ResBody: Default,
@@ -166,16 +169,22 @@ where
 
     #[inline]
     fn on_missing_or_malformed(&self) -> Response<Self::Body> {
+        tracing::debug!(
+            exception = as_std_err(&JwtMissingOrMalformed),
+            JWT_VALID_FAIL_MSG
+        );
         unauthorized("")
     }
 
     #[inline]
     fn on_no_matching_jwk(&self) -> Response<Self::Body> {
+        tracing::debug!(exception = as_std_err(&NoMatchingJwk), JWT_VALID_FAIL_MSG);
         unauthorized("")
     }
 
     #[inline]
-    fn on_jwt_invalid(&self, _: JwtVerifyError) -> Response<Self::Body> {
+    fn on_jwt_invalid(&self, error: JwtVerifyError) -> Response<Self::Body> {
+        tracing::debug!(exception = as_std_err(&error), JWT_VALID_FAIL_MSG);
         unauthorized("")
     }
 }
@@ -188,17 +197,24 @@ where
 
     #[inline]
     fn on_missing_or_malformed(&self) -> Response<Self::Body> {
-        unauthorized("authorization token is missing or malformed")
+        tracing::debug!(
+            exception = as_std_err(&JwtMissingOrMalformed),
+            JWT_VALID_FAIL_MSG
+        );
+        unauthorized(JwtMissingOrMalformed::ERROR_DESC)
     }
 
     #[inline]
     fn on_no_matching_jwk(&self) -> Response<Self::Body> {
-        unauthorized("token signing key (kid) is not trusted")
+        tracing::debug!(exception = as_std_err(&NoMatchingJwk), JWT_VALID_FAIL_MSG);
+        unauthorized(NoMatchingJwk::ERROR_DESC)
     }
 
     #[inline]
     fn on_jwt_invalid(&self, error: JwtVerifyError) -> Response<Self::Body> {
         use std::fmt::Write;
+
+        tracing::debug!(exception = as_std_err(&error), JWT_VALID_FAIL_MSG);
 
         let mut description = String::new();
         let mut err: &dyn std::error::Error = &error;
@@ -207,7 +223,6 @@ where
             write!(&mut description, ": {next}").unwrap();
             err = next;
         }
-
         unauthorized(&description)
     }
 }
@@ -218,4 +233,41 @@ fn extract_jwt(auth: &str) -> Option<Jwt> {
     }
 
     Some(Jwt::from(auth[7..].trim()))
+}
+
+#[derive(Debug)]
+struct JwtMissingOrMalformed;
+
+impl JwtMissingOrMalformed {
+    const ERROR_DESC: &'static str = "authorization token is missing or malformed";
+}
+
+impl fmt::Display for JwtMissingOrMalformed {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(Self::ERROR_DESC)
+    }
+}
+
+impl std::error::Error for JwtMissingOrMalformed {}
+
+#[derive(Debug)]
+struct NoMatchingJwk;
+
+impl NoMatchingJwk {
+    const ERROR_DESC: &'static str = "token signing key (kid) is not trusted";
+}
+
+impl fmt::Display for NoMatchingJwk {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(Self::ERROR_DESC)
+    }
+}
+
+impl std::error::Error for NoMatchingJwk {}
+
+/// Error type coercion helper
+const fn as_std_err<'a>(
+    err: &'a (dyn std::error::Error + 'static),
+) -> &'a (dyn std::error::Error + 'static) {
+    err
 }

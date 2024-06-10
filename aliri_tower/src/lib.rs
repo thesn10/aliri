@@ -79,7 +79,7 @@
 //! # async fn handle_get(Path(id): Path<u64>) {}
 //! #
 //! # async {
-//! # axum::Server::bind(&"".parse().unwrap()).serve(app.into_make_service()).await.unwrap();
+//! # axum::serve(tokio::net::TcpListener::bind("").await.unwrap(), app).await.unwrap();
 //! # };
 //! ```
 
@@ -143,7 +143,7 @@ impl<ResBody> Default for TerseErrorHandler<ResBody> {
 impl<ResBody> Clone for TerseErrorHandler<ResBody> {
     #[inline]
     fn clone(&self) -> Self {
-        Self { _ty: PhantomData }
+        *self
     }
 }
 
@@ -184,7 +184,7 @@ impl<ResBody> Default for VerboseErrorHandler<ResBody> {
 impl<ResBody> Clone for VerboseErrorHandler<ResBody> {
     #[inline]
     fn clone(&self) -> Self {
-        Self { _ty: PhantomData }
+        *self
     }
 }
 

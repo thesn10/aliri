@@ -3,7 +3,7 @@ name = "aliri_actix"
 description = "Actix for interacting with `aliri` authorities"
 keywords = [ "actix", "jose", "jwt", "oauth2", "auth" ]
 categories = [ "authentication", "web-programming", "web-programming::http-server" ]
-version = "0.9.0"
+version = "0.9.1"
 authors = ["Marcus Griep <marcus@griep.us>"]
 edition = "2018"
 readme = "../README.md"
@@ -18,7 +18,7 @@ aliri = { version = "0.6.0", path = "../aliri" }
 aliri_traits = { version = "0.1.0", path = "../aliri_traits" }
 aliri_oauth2 = { version = "0.10.0", path = "../aliri_oauth2" }
 futures = "0.3"
-once_cell = "1.4"
+once_cell = "1.19"
 serde = { version = "1", features = [ "derive" ] }
 thiserror = "1"
 tracing = "0.1"
