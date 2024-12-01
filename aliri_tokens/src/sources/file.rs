@@ -63,7 +63,7 @@ impl FileTokenSource {
 
 #[async_trait]
 impl AsyncTokenSource for FileTokenSource {
-    type Error = std::io::Error;
+    type Error = io::Error;
 
     async fn request_token(&mut self) -> Result<TokenWithLifetime, Self::Error> {
         self.read_token().await

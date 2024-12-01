@@ -3,7 +3,7 @@ name = "aliri"
 description = "Implementations of the Javascript/JSON Object Signing and Encryption (JOSE) standards"
 keywords = [ "jwk", "jwa", "jose", "jwt", "auth" ]
 categories = [ "authentication" ]
-version = "0.6.2"
+version = "0.6.4"
 authors = ["Marcus Griep <marcus@griep.us>"]
 edition = "2018"
 readme = "../README.md"
@@ -29,9 +29,9 @@ features = [ "rsa", "ec", "hmac", "private-keys" ]
 aliri_base64 = { version = "0.1.7", path = "../aliri_base64", features = [ "serde" ] }
 aliri_clock = { version = "0.1.0", path = "../aliri_clock", features = [ "serde" ] }
 aliri_braid = { version = "0.4.0" }
-once_cell = { version = "1.4" }
+once_cell = { version = "1.19" }
 regex = "1"
-ring = "0.16"
+ring = "0.17"
 serde = { version = "1", features = [ "derive" ] }
 serde_json = "1"
 tracing = { version = "0.1", optional = true }
@@ -42,7 +42,7 @@ openssl = { version = "0.10", optional = true }
 
 [dev-dependencies]
 color-eyre = "0.6"
-tracing-test = "0.2.2"
+tracing-test = "0.2.4"
 
 [package.metadata.workspaces]
 independent = true

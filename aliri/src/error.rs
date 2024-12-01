@@ -20,6 +20,18 @@ pub(crate) fn incompatible_algorithm(
     IncompatibleAlgorithm { alg: alg.into() }
 }
 
+/// The provided name could not be matched with supported algorithms
+#[derive(Debug, Error)]
+#[error("'{alg}' does not match supported algorithms")]
+pub struct UnknownAlgorithm {
+    alg: String,
+}
+
+#[inline]
+pub(crate) fn unknown_algorithm(alg: String) -> UnknownAlgorithm {
+    UnknownAlgorithm { alg }
+}
+
 /// The JWK has a specific usage that disallows this use
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Error)]
 #[error("JWK cannot be used in this way")]
@@ -135,6 +147,7 @@ pub struct Unexpected {
     source: Box<dyn StdError + Send + Sync + 'static>,
 }
 
+#[allow(dead_code)]
 pub(crate) fn unexpected(
     source: impl Into<Box<dyn StdError + Send + Sync + 'static>>,
 ) -> Unexpected {
